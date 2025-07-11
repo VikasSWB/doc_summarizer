@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocSummarizer - AI Document Summarizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">
+                    <i class="fas fa-file-text"></i>
+                    <span>DocSummarizer</span>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Home Page -->
+    <div id="home" class="page active">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-badge">
+                    <i class="fas fa-sparkles"></i>
+                    AI-Powered Document Analysis
+                </div>
+                
+                <h1 class="hero-title">
+                    Summarize Any Document with
+                    <span class="gradient-text">AI Power</span>
+                </h1>
+                
+                <p class="hero-description">
+                    Transform lengthy documents into concise, actionable summaries in seconds. 
+                    Perfect for research papers, reports, articles, and more.
+                </p>
+                
+                <div class="hero-buttons">
+                    <button class="btn btn-primary btn-large">
+                        <i class="fas fa-upload"></i>
+                        Get Started Free
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <div class="container">
+                <div class="upload-card">
+                    <div class="card-header">
+                        <h2>Upload Your Document</h2>
+                        <p>Support for PDF, DOC, DOCX, TXT files up to 10MB</p>
+                    </div>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                        
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-upload"></i>
+                            </div>
+                            
+                            <div class="upload-text">
+                                <h3>Drop your document here</h3>
+                                <p>or click to browse your files</p>
+                                <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-file-text"></i>
+                                    Choose File
+                                </button>
+                            </div>
+                            
+                            <p class="upload-info">
+                                Supports PDF, DOC, DOCX, TXT • Max 10MB
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="selected-file" id="selectedFile" style="display: none;">
+                        <div class="file-info">
+                            <i class="fas fa-file-text"></i>
+                            <div class="file-details">
+                                <p class="file-name" id="fileName"></p>
+                                <p class="file-size" id="fileSize"></p>
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost" onclick="removeFile()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-large btn-full" id="summarizeBtn" onclick="summarizeDocument()" disabled>
+                        <i class="fas fa-sparkles"></i>
+                        <span id="btnText">Generate AI Summary</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary and Questions Layout -->
+        <section class="summary-questions-section" id="summaryQuestionsSection" style="display: none;">
+            <div class="container">
+                <div class="summary-questions-grid">
+                    <!-- AI Summary - Left Side -->
+                    <div class="summary-column">
+                        <div class="summary-card">
+                            <div class="summary-header">
+                                <div class="summary-info">
+                                    <div class="summary-icon">
+                                        <i class="fas fa-file-text"></i>
+                                    </div>
+                                    <div class="summary-details">
+                                        <h3>AI Summary Generated</h3>
+                                        <p id="summaryFileName">Summary of: document.pdf</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-actions">
+                                    <button class="btn btn-outline btn-small" onclick="copySummary()">
+                                        <i class="fas fa-copy"></i>
+                                        Copy
+                                    </button>
+                                    <button class="btn btn-outline btn-small" onclick="shareSummary()">
+                                        <i class="fas fa-share"></i>
+                                        Share
+                                    </button>
+                                    <button class="btn btn-outline btn-small" onclick="downloadSummary()">
+                                        <i class="fas fa-download"></i>
+                                        Download
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-content">
+                                <div class="summary-box">
+                                    <h4>
+                                        <span class="pulse-dot"></span>
+                                        Document Summary
+                                    </h4>
+                                    <div class="summary-text" id="summaryText"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggested Questions - Right Side -->
+                    <div class="questions-column">
+                        <div class="questions-card">
+                            <div class="questions-header">
+                                <div class="questions-info">
+                                    <div class="questions-icon">
+                                        <i class="fas fa-sparkles"></i>
+                                    </div>
+                                    <div class="questions-details">
+                                        <h3>Suggested Questions</h3>
+                                        <p>Ask anything about your document</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="questions-content">
+                                <div class="suggested-questions" id="suggestedQuestions">
+                                    <div class="loading-questions" id="loadingQuestions">
+                                        <div class="spinner"></div>
+                                        <p>Generating questions...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Input Section -->
+                <div class="question-input-section">
+                    <div class="question-input-card">
+                        <div class="question-input-wrapper">
+                            <textarea 
+                                id="questionInput" 
+                                placeholder="Hey! Ask me anything about your PDF..."
+                                class="question-textarea"
+                            ></textarea>
+                            <button class="btn btn-primary question-submit-btn" id="questionSubmitBtn" onclick="submitQuestion()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Answer Display -->
+                        <div class="answer-section" id="answerSection" style="display: none;">
+                            <div class="answer-box">
+                                <h4>
+                                    <span class="pulse-dot"></span>
+                                    Answer
+                                </h4>
+                                <div class="answer-text" id="answerText"></div>
+                            </div>
+                        </div>
+
+                        <!-- Conversation History -->
+                        <div class="conversation-history" id="conversationHistory" style="display: none;">
+                            <h4>Previous Q&A:</h4>
+                            <div class="conversation-list" id="conversationList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section" id="features">
+            <div class="container">
+                <div class="features-header">
+                    <div class="features-badge">
+                        <i class="fas fa-sparkles"></i>
+                        Powerful Features
+                    </div>
+                    
+                    <h2>
+                        Why Choose Our
+                        <span class="gradient-text">AI Summarizer</span>
+                    </h2>
+                    
+                    <p>
+                        Discover the features that make our document summarizer the best choice for professionals, 
+                        students, and researchers worldwide.
+                    </p>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon blue">
+                            <i class="fas fa-sparkles"></i>
+                        </div>
+                        <h3>AI-Powered Analysis</h3>
+                        <p>Advanced machine learning algorithms extract key insights from your documents with incredible accuracy.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon green">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Lightning Fast</h3>
+                        <p>Get comprehensive summaries in seconds, not hours. Save time and boost your productivity instantly.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon purple">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3>Precision Accuracy</h3>
+                        <p>Our AI understands context and nuance, delivering summaries that capture the most important points.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon orange">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Multi-Format Support</h3>
+                        <p>Works with PDF, DOC, DOCX, and TXT files. Perfect for research papers, reports, and articles.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon red">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Secure & Private</h3>
+                        <p>Your documents are processed securely and never stored. Complete privacy and data protection.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon indigo">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>Export Options</h3>
+                        <p>Download summaries as text files, copy to clipboard, or share directly with your team.</p>
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+    </div>
+
+    <!-- Pricing Page -->
+    <div id="pricing" class="page">
+        <section class="pricing-section">
+            <div class="container">
+                <div class="pricing-header">
+                    <div class="pricing-badge">
+                        <i class="fas fa-tag"></i>
+                        Simple Pricing
+                    </div>
+                    
+                    <h2>Choose the Perfect Plan for Your Needs</h2>
+                    <p>Start free and upgrade as you grow. No hidden fees, cancel anytime.</p>
+                </div>
+                
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <div class="plan-header">
+                            <h3>Free</h3>
+                            <div class="price">
+                                <span class="currency">$</span>
+                                <span class="amount">0</span>
+                                <span class="period">/month</span>
+                            </div>
+                            <p>Perfect for trying out our service</p>
+                        </div>
+                        
+                        <ul class="features-list">
+                            <li><i class="fas fa-check"></i> 5 documents per month</li>
+                            <li><i class="fas fa-check"></i> Basic AI summaries</li>
+                            <li><i class="fas fa-check"></i> PDF, DOC, TXT support</li>
+                            <li><i class="fas fa-check"></i> Email support</li>
+                            <li><i class="fas fa-times"></i> Priority processing</li>
+                            <li><i class="fas fa-times"></i> Advanced analytics</li>
+                        </ul>
+                        
+                        <button class="btn btn-outline btn-full">Get Started</button>
+                    </div>
+                    
+                    <div class="pricing-card popular">
+                        <div class="popular-badge">Most Popular</div>
+                        <div class="plan-header">
+                            <h3>Pro</h3>
+                            <div class="price">
+                                <span class="currency">$</span>
+                                <span class="amount">19</span>
+                                <span class="period">/month</span>
+                            </div>
+                            <p>Best for professionals and teams</p>
+                        </div>
+                        
+                        <ul class="features-list">
+                            <li><i class="fas fa-check"></i> 100 documents per month</li>
+                            <li><i class="fas fa-check"></i> Advanced AI summaries</li>
+                            <li><i class="fas fa-check"></i> All file formats</li>
+                            <li><i class="fas fa-check"></i> Priority support</li>
+                            <li><i class="fas fa-check"></i> Priority processing</li>
+                            <li><i class="fas fa-check"></i> Custom templates</li>
+                        </ul>
+                        
+                        <button class="btn btn-primary btn-full">Choose Pro</button>
+                    </div>
+                    
+                    <div class="pricing-card">
+                        <div class="plan-header">
+                            <h3>Enterprise</h3>
+                            <div class="price">
+                                <span class="currency">$</span>
+                                <span class="amount">99</span>
+                                <span class="period">/month</span>
+                            </div>
+                            <p>For large organizations</p>
+                        </div>
+                        
+                        <ul class="features-list">
+                            <li><i class="fas fa-check"></i> Unlimited documents</li>
+                            <li><i class="fas fa-check"></i> Premium AI models</li>
+                            <li><i class="fas fa-check"></i> API access</li>
+                            <li><i class="fas fa-check"></i> 24/7 support</li>
+                            <li><i class="fas fa-check"></i> Custom integrations</li>
+                            <li><i class="fas fa-check"></i> Advanced analytics</li>
+                        </ul>
+                        
+                        <button class="btn btn-outline btn-full">Contact Sales</button>
+                    </div>
+                </div>
+                
+                <div class="pricing-faq">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="faq-grid">
+                        <div class="faq-item">
+                            <h4>Can I change plans anytime?</h4>
+                            <p>Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Is there a free trial?</h4>
+                            <p>Yes, our Free plan lets you try the service with 5 documents per month at no cost.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>What payment methods do you accept?</h4>
+                            <p>We accept all major credit cards, PayPal, and bank transfers for Enterprise plans.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Do you offer refunds?</h4>
+                            <p>Yes, we offer a 30-day money-back guarantee on all paid plans.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Contact Page -->
+    <div id="contact" class="page">
+        <section class="contact-section">
+            <div class="container">
+                <div class="contact-header">
+                    <div class="contact-badge">
+                        <i class="fas fa-envelope"></i>
+                        Get in Touch
+                    </div>
+                    
+                    <h2>We'd Love to Hear From You</h2>
+                    <p>Have questions, feedback, or need support? Our team is here to help.</p>
+                </div>
+                
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h4>Email Support</h4>
+                                <p>support@docsummarizer.com</p>
+                                <span>We typically respond within 24 hours</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h4>Phone Support</h4>
+                                <p>+1 (555) 123-4567</p>
+                                <span>Mon-Fri, 9AM-6PM EST</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h4>Office Address</h4>
+                                <p>123 AI Street, Tech City</p>
+                                <span>San Francisco, CA 94105</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h4>Business Hours</h4>
+                                <p>Monday - Friday</p>
+                                <span>9:00 AM - 6:00 PM EST</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-form-wrapper">
+                        <form class="contact-form" id="contactForm">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="subject">Subject</label>
+                                <select id="subject" name="subject" required>
+                                    <option value="">Select a topic</option>
+                                    <option value="support">Technical Support</option>
+                                    <option value="billing">Billing Question</option>
+                                    <option value="feature">Feature Request</option>
+                                    <option value="partnership">Partnership</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" name="message" rows="6" required placeholder="Tell us how we can help you..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-full">
+                                <i class="fas fa-paper-plane"></i>
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Demo Page -->
+    <div id="demo" class="page">
+        <section class="demo-section">
+            <div class="container">
+                <div class="demo-header">
+                    <div class="demo-badge">
+                        <i class="fas fa-play"></i>
+                        Live Demo
+                    </div>
+                    
+                    <h2>See DocSummarizer in Action</h2>
+                    <p>Experience the power of AI document summarization with our interactive demo.</p>
+                </div>
+                
+                <div class="demo-content">
+                    <div class="demo-video">
+                        <div class="video-placeholder">
+                            <i class="fas fa-play-circle"></i>
+                            <h3>Interactive Demo</h3>
+                            <p>Click to see how easy it is to summarize documents</p>
+                        </div>
+                    </div>
+                    
+                    <div class="demo-steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Upload Document</h4>
+                                <p>Drag and drop or browse to upload your PDF, DOC, or TXT file</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>AI Processing</h4>
+                                <p>Our advanced AI analyzes your document and extracts key insights</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Get Summary</h4>
+                                <p>Receive a concise, accurate summary in seconds</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Export & Share</h4>
+                                <p>Download, copy, or share your summary with colleagues</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-cta">
+                    <h3>Ready to Try It Yourself?</h3>
+                    <button class="btn btn-primary btn-large" onclick="showPage('home')">
+                        <i class="fas fa-upload"></i>
+                        Start Summarizing Now
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-file-text"></i>
+                    <span>DocSummarizer</span>
+                </div>
+                <p>Powered by Silver Webbuzz PVT. LTD. for intelligent document analysis</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <i class="toast-icon fas fa-check-circle"></i>
+            <div class="toast-message">
+                <strong id="toastTitle">Success</strong>
+                <p id="toastDescription">Action completed successfully</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
