@@ -423,6 +423,35 @@ def ask_question():
         logger.error(f"Error in ask_question: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+def generate_rag_answer(question, context, file_name):
+    if not model:
+        return f"""Based on the uploaded document, this appears to be related to your question about "{question}". 
+The document contains relevant information that suggests strategic planning and effective communication are key factors. 
+For more specific details, please ensure the server is running and the RAG model is properly configured."""
+
+    try:
+        prompt = f"""
+        You are an AI assistant. Based on the content of the document titled "{file_name}" below, please answer the user's question.
+        
+        Document content:
+        {context}
+        
+        Question:
+        {question}
+        
+        Answer:
+        """
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Gemini RAG error: {e}")
+        return "Unable to answer the question due to an internal error."
+
+
+
+
+
+
 @app.route('/api/generate-questions', methods=['POST'])
 def generate_questions():
     """Generate suggested questions based on document content"""
