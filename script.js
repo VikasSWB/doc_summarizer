@@ -1,3 +1,4 @@
+const BASE_PATH = "/docsummary";
 // Global variables
 let selectedFile = null;
 let currentSummary = '';
@@ -136,13 +137,12 @@ async function handleContactFormSubmission() {
     };
     
     try {
-        // Call actual API endpoint
-        const response = await fetch('/api/contact', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(contactData),
+        const response = await fetch(`${BASE_PATH}/api/contact`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(contactData),
         });
         
         const data = await response.json();
@@ -257,11 +257,9 @@ async function summarizeDocument() {
         // Create FormData to send file
         const formData = new FormData();
         formData.append('file', selectedFile);
-        
-        // Call actual API endpoint
-        const response = await fetch('/api/summarize', {
-            method: 'POST',
-            body: formData,
+        const response = await fetch(`${BASE_PATH}/api/summarize`, {
+          method: "POST",
+          body: formData,
         });
         
         const data = await response.json();
@@ -343,17 +341,19 @@ async function generateSuggestedQuestions(summaryText, fileName) {
     loadingQuestions.style.display = 'flex';
     
     try {
-        const response = await fetch('/api/generate-questions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                summary: summaryText,
-                fileName: fileName,
-            }),
-        });
+        const response = await fetch(`${BASE_PATH}/api/generate-questions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            summary: summaryText,
+            fileName: fileName,
+        }),
+    });
 
+        
+            
         const data = await response.json();
 
         if (data.success) {
@@ -436,54 +436,56 @@ async function submitQuestion() {
     questionSubmitBtn.disabled = true;
     questionSubmitBtn.innerHTML = '<div class="spinner"></div>';
     
-    try {
-        const response = await fetch('/api/ask-question', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                question: question,
-                fileName: selectedFile.name,
-                context: currentSummary,
-            }),
-        });
 
-        const data = await response.json();
+try {
+    const response = await fetch(`${BASE_PATH}/api/ask-question`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            question: question,
+            fileName: selectedFile.name,
+            context: currentSummary,
+        }),
+    });
 
-        if (data.success) {
-            displayAnswer(data.answer);
-            addToConversationHistory(question, data.answer);
-            questionInput.value = '';
-            
-            showToast('Answer generated', 'AI has answered your question based on the document.', 'success');
-        } else {
-            throw new Error(data.error || 'Failed to get answer');
-        }
-    } catch (error) {
-        console.error('Error getting answer:', error);
-        
-        // Fallback mock answer
-        const mockAnswer = `Based on the uploaded document, this appears to be related to your question about "${question}". The document contains relevant information that suggests strategic planning and effective communication are key factors. For more specific details, please ensure the server is running and the RAG model is properly configured.`;
-        
-        displayAnswer(mockAnswer);
-        addToConversationHistory(question, mockAnswer);
+    const data = await response.json();
+
+    if (data.success) {
+        displayAnswer(data.answer);
+        addToConversationHistory(question, data.answer);
         questionInput.value = '';
-        
-        showToast('Answer generated (offline mode)', 'Using offline Q&A. Connect to server for AI-powered responses.', 'success');
-    } finally {
-        // Reset button state
-        isLoadingAnswer = false;
-        questionSubmitBtn.disabled = false;
-        questionSubmitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+
+        showToast('Answer generated', 'AI has answered your question based on the document.', 'success');
+    } else {
+        throw new Error(data.error || 'Failed to get answer');
     }
+} catch (error) {
+    console.error('Error getting answer:', error);
+
+    // Fallback mock answer
+    const mockAnswer = `Based on the uploaded document, this appears to be related to your question about "${question}". The document contains relevant information that suggests strategic planning and effective communication are key factors. For more specific details, please ensure the server is running and the RAG model is properly configured.`;
+
+    displayAnswer(mockAnswer);
+    addToConversationHistory(question, mockAnswer);
+    questionInput.value = '';
+
+    showToast('Answer generated (offline mode)', 'Using offline Q&A. Connect to server for AI-powered responses.', 'success');
+} finally {
+    // Reset button state
+    isLoadingAnswer = false;
+    questionSubmitBtn.disabled = false;
+    questionSubmitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
 }
+}
+
 
 // Display answer
 function displayAnswer(answer) {
     const answerSection = document.getElementById('answerSection');
     const answerText = document.getElementById('answerText');
-    
+    const cleanedAnswer = answer.replace(/\*/g, '');
     answerText.textContent = answer;
     answerSection.style.display = 'block';
 }
@@ -643,16 +645,16 @@ document.addEventListener('click', function(e) {
 // Add a function to check server health
 async function checkServerHealth() {
     try {
-        const response = await fetch('/api/health');
-        const data = await response.json();
-        console.log('Server status:', data);
-        return data.status === 'healthy';
-    } catch (error) {
-        console.error('Server health check failed:', error);
-        return false;
-    }
+    const response = await fetch(`${BASE_PATH}/api/health`);
+    const data = await response.json();
+    console.log('Server status:', data);
+    return data.status === 'healthy';
+} catch (error) {
+    console.error('Server health check failed:', error);
+    return false;
 }
 
+}
 // Initialize server health check on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeFileUpload();
