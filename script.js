@@ -245,46 +245,46 @@ async function summarizeDocument() {
         showToast('No file selected', 'Please upload a document first.', 'error');
         return;
     }
-    
+
     const summarizeBtn = document.getElementById('summarizeBtn');
     const btnText = document.getElementById('btnText');
-    
+
     // Show loading state
     summarizeBtn.disabled = true;
     btnText.innerHTML = '<span class="spinner"></span> Generating Summary...';
-    
+
     try {
         // Create FormData to send file
         const formData = new FormData();
         formData.append('file', selectedFile);
+
         const response = await fetch(`${BASE_PATH}/api/summarize`, {
-          method: "POST",
-          body: formData,
+            method: "POST",
+            body: formData,
         });
-        
+
         const data = await response.json();
-        
-        if (!response.ok) {
+
+        if (!response.ok || !data.success) {
             throw new Error(data.error || 'Failed to generate summary');
         }
-        
-        if (!data.success) {
-            throw new Error(data.error || 'Summary generation failed');
-        }
-        
-        currentSummary = data.summary;
-        displaySummaryAndQuestions(data.summary, selectedFile.name);
-        
+
+        // Clean asterisks from summary
+        const cleanedSummary = data.summary.replace(/\*/g, '');
+        currentSummary = cleanedSummary;
+
+        displaySummaryAndQuestions(cleanedSummary, selectedFile.name);
+
         // Generate suggested questions
-        await generateSuggestedQuestions(data.summary, selectedFile.name);
-        
+        await generateSuggestedQuestions(cleanedSummary, selectedFile.name);
+
         showToast('Summary generated', 'Your document has been successfully summarized.', 'success');
-        
+
         console.log('Summary saved with ID:', data.id);
-        
+
     } catch (error) {
         console.error('Error generating summary:', error);
-        
+
         // Fallback to mock summary
         const mockSummary = `This document discusses key concepts and strategies for effective communication and project management. The main points include:
 
@@ -298,19 +298,24 @@ The document emphasizes the importance of clear communication channels and regul
 
 Key recommendations include establishing clear roles and responsibilities, implementing regular check-ins, and maintaining comprehensive documentation throughout the project lifecycle.`;
 
-        currentSummary = mockSummary;
-        displaySummaryAndQuestions(mockSummary, selectedFile.name);
-        
-        // Generate fallback questions
-        generateFallbackQuestions();
-        
+        const cleanedMockSummary = mockSummary.replace(/\*/g, '');
+        currentSummary = cleanedMockSummary;
+
+        displaySummaryAndQuestions(cleanedMockSummary, selectedFile.name);
+
+        // Fallback questions
+        await generateFallbackQuestions();
+
         showToast('Summary generated (offline mode)', 'Using offline summarization. Connect to server for AI-powered analysis.', 'success');
     } finally {
-        // Reset button state
         summarizeBtn.disabled = false;
         btnText.innerHTML = '<i class="fas fa-sparkles"></i> Generate AI Summary';
     }
 }
+
+
+
+
 
 // Display summary and questions section
 function displaySummaryAndQuestions(summary, fileName) {
